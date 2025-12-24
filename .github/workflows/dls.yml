@@ -75,6 +75,7 @@ jobs:
         asset_ name: splits
         file: out 
         repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: v2
       
     - name: ls dirp
       run: ls -R -lh
