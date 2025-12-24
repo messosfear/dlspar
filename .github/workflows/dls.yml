@@ -50,6 +50,9 @@ jobs:
     - name: build Limny
       run: javac Limny.java
       
+    - name: sub 1
+      run: ls -R 
+      
     - name: un limny
       run: java Limny "${{inputs.url}}"
 
