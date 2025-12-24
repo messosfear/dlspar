@@ -67,10 +67,16 @@ public class Limny {
 
 
         // sleep token
+        int i8 = 0;
         while(dlqs.isEmpty()==false){
             try {
                 proglog();
                 Thread.sleep(6000);
+                i8=i8+2;
+                
+                if(i8>10){
+                    break;
+                }
 
             } catch (InterruptedException e) {}
         }
@@ -86,6 +92,7 @@ public class Limny {
             log(k.savepath+" ("+k.rcode+") ;; ["+k.startByte+"-"+k.endByte+"]//("+k.dlByte+")//");
             log("");
         }
+        log("");
     }
 
     class dlTask implements Runnable{
@@ -115,8 +122,8 @@ public class Limny {
                 //
                 //String cookie = CookieManager.getInstance().getCookie(url);
                 // cc.addRequestProperty("cookie", cookie);
-                
-                
+
+
                 if(endByte>-1){
                     cc.addRequestProperty("Range","bytes="+ startByte +"-"+endByte);
                 }else{
@@ -141,7 +148,7 @@ public class Limny {
                         //
                         //
                         rf.write(buff, 0, red);
-                        dlByte += red;
+                        this.dlByte += red;
 
                     }
 
