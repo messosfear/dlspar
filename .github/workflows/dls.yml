@@ -60,8 +60,8 @@ jobs:
         git config --global user.name "${{ github.actor }}"
         git config --global user.email "${{ github.actor }}@.github.com"
         # stage any file changes to be committed
-        git checkout master
-        git pull origin master --rebase
+        git checkout main
+        git pull origin main --rebase
         cp -r bin/ .
         git add .
         # make commit with staged changes
