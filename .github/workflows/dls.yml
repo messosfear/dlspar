@@ -43,6 +43,7 @@ jobs:
     - name: prep structs
       run: |
         mkdir bin
+        touch bin/foo.txt
       
     - name: build Limny
       run: javac Limny.java
@@ -70,7 +71,7 @@ jobs:
         git push https://${PAT}@github.com/${REPO}
         
     # Commit all changed files back to the repository
-    - uses: stefanzweifel/git-auto-commit-action@v7
+    #- uses: stefanzweifel/git-auto-commit-action@v7
       
     - name: upload raw
       uses: actions/upload-artifact@v4.3.3
@@ -82,7 +83,7 @@ jobs:
       uses: svenstaro/upload-release-action@2.11.3
       with:
         asset_ name: splits
-        file: out 
+        file: bin
         repo_token: ${{ secrets.PAT }}
         tag: v2
       
