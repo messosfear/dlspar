@@ -53,15 +53,21 @@ jobs:
       
     # Commit and Push Changes
     - name: Commit and Push Changes
+      env:  
+          PAT: ${{ secrets.PAT }}  # GitHub PAT stored in repository secrets  
+          REPO: ${{ github.repository }}
       run: |
         git config --global user.name "${{ github.actor }}"
-        git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+        git config --global user.email "${{ github.actor }}@.github.com"
         # stage any file changes to be committed
+        git checkout master
+        git pull origin master --rebase
+        cp -r bin/ .
         git add .
         # make commit with staged changes
         git commit -m 'files changed'
         # push the commit back up to source GitHub repository
-        git push
+        git push https://${PAT}@github.com/${REPO}
       
     - name: upload raw
       uses: actions/upload-artifact@v4.3.3
