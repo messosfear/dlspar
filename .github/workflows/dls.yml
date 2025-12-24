@@ -37,6 +37,10 @@ jobs:
       with:
         java-version: '8'
         distribution: 'temurin'
+        
+    - name: prep structs
+      run: |
+        mkdir bin
       
     - name: build Limny
       run: javac Limny.java
@@ -46,6 +50,18 @@ jobs:
       
     - name: lsd
       run: ls -R -l
+      
+    # Commit and Push Changes
+    - name: Commit and Push Changes
+      run: |
+        git config --global user.name "${{ github.actor }}"
+        git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+        # stage any file changes to be committed
+        git add .
+        # make commit with staged changes
+        git commit -m 'files changed'
+        # push the commit back up to source GitHub repository
+        git push
       
     - name: upload raw
       uses: actions/upload-artifact@v4.3.3
