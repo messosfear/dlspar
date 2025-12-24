@@ -71,7 +71,7 @@ public class Limny {
             try {
                 proglog();
                 Thread.sleep(6000);
-                
+
             } catch (InterruptedException e) {}
         }
 
@@ -83,8 +83,7 @@ public class Limny {
 
     public void proglog(){
         for(dlTask k : dlqs){
-            log(k.savepath+"");
-            log(k.endByte+"//"+k.dlByte+"//");
+            log(k.savepath+" ("+k.rcode+") ;; ["+k.startByte+"-"+k.endByte+"]//("+k.dlByte+")//");
             log("");
         }
     }
@@ -93,6 +92,7 @@ public class Limny {
         long startByte;
         long endByte;
         long dlByte=0;
+        int rcode=0;
         boolean completed;
         String savepath = fpre+"";
 
@@ -111,11 +111,12 @@ public class Limny {
                 HttpURLConnection cc = (HttpURLConnection) new URL(url).openConnection();
                 cc.setInstanceFollowRedirects(true);
                 cc.setFollowRedirects(true);
-                cc.setRequestProperty("User-Agent",  "windows 10 pro;chrome 212");
+                cc.setRequestProperty("User-Agent",  "linux; ubuntu; firefox 301");
                 //
                 //String cookie = CookieManager.getInstance().getCookie(url);
-                cc.setFollowRedirects(true);
                 // cc.addRequestProperty("cookie", cookie);
+                
+                
                 if(endByte>-1){
                     cc.addRequestProperty("Range","bytes="+ startByte +"-"+endByte);
                 }else{
@@ -123,13 +124,13 @@ public class Limny {
                 }
 
                 // response
-                int rc = cc.getResponseCode();
+                rcode = cc.getResponseCode();
 
                 RandomAccessFile rf = new RandomAccessFile(savepath,"rw");
                 BufferedInputStream bis = null;
 
 
-                if(rc<400){
+                if(rcode<400){
                     //
                     byte[] buff = new byte[1024*1024*3];
                     bis = new BufferedInputStream( cc.getInputStream());
