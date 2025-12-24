@@ -69,7 +69,9 @@ public class Limny {
         // sleep token
         while(dlqs.isEmpty()==false){
             try {
-                Thread.sleep(5000);
+                proglog();
+                Thread.sleep(6000);
+                
             } catch (InterruptedException e) {}
         }
 
@@ -77,6 +79,14 @@ public class Limny {
 
     public void log(String s){
         System.out.println(s);
+    }
+
+    public void proglog(){
+        for(dlTask k : dlqs){
+            log(k.savepath+"");
+            log(k.endByte+"//"+k.dlByte+"//");
+            log("");
+        }
     }
 
     class dlTask implements Runnable{
