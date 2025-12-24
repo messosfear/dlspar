@@ -11,7 +11,7 @@ import java.io.BufferedInputStream;
 import java.io.Closeable;
 
 public class Limny {
-    
+
     public int PARTS = 6;
 
     public static void main(String[] args) {
@@ -39,11 +39,11 @@ public class Limny {
         } catch (IOException e) {}
 
         log("preparing...");
-        
+
         if(size>1024){
             prep1KnownSize(size);
         }else{
-            
+
             prep2UnknownSize();
         }
 
@@ -52,10 +52,10 @@ public class Limny {
         log(url);
         log(" ");
         log(" ");
-        
+
         for(dlTask k : dlqs){
             log(k.savepath +"// "+k.endByte+""+k.startByte +(k.endByte-k.startByte));
-          //  worker.submit(k);
+            //  worker.submit(k);
             //
         }
 
@@ -69,7 +69,7 @@ public class Limny {
         }
 
     }
-    
+
     public void prep1KnownSize(long size){
         long partSize = size/PARTS;
         long remainder = size % PARTS;
@@ -80,38 +80,38 @@ public class Limny {
         for(int i=0;i<PARTS;i++){
             //
             s1=e1;
-            e1= partSize;
-            
+            e1 += partSize;
+
             if(i==PARTS - 1){
                 e1 += remainder;
             }
             //
             dlTask k = new dlTask(s1, e1);
             dlqs.add(k);
-            
+
             e1+=1;
-            
+
         }
     }
-    
+
     public void prep2UnknownSize(){
         long curs = 0;
-        long mill = 1000000;
+        long mill =  524288000;
         ///
         //
-        
+
     }
-    
+
     public long getSize(String u) throws IOException{
-       HttpURLConnection c =  gc(u);
-       return  c.getContentLength();
-       //
+        HttpURLConnection c =  gc(u);
+        return  c.getContentLength();
+        //
     }
-    
+
     public static HttpURLConnection gc(String u) throws IOException{
         HttpURLConnection c = (HttpURLConnection) new URL(u).openConnection();
-       // c.setConnectTimeout(CONNECT_TIMEOUT_MS);
-      //  c.setReadTimeout(READ_TIMEOUT_MS);
+        // c.setConnectTimeout(CONNECT_TIMEOUT_MS);
+        //  c.setReadTimeout(READ_TIMEOUT_MS);
         //
         c.setInstanceFollowRedirects(true);
         return c;
@@ -212,4 +212,6 @@ public class Limny {
             } catch (IOException e) {}
         }
     }
+
+
 }
