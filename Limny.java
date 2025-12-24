@@ -1,5 +1,5 @@
 package com.myorg.limmy;
-import android.webkit.CookieManager;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -78,9 +78,9 @@ public class Limny {
                 cc.setFollowRedirects(true);
                 cc.setRequestProperty("User-Agent",  "windows 10 pro;chrome 212");
                 //
-                String cookie = CookieManager.getInstance().getCookie(url);
+                //String cookie = CookieManager.getInstance().getCookie(url);
                 cc.setFollowRedirects(true);
-                cc.addRequestProperty("cookie", cookie);
+               // cc.addRequestProperty("cookie", cookie);
                 if(endByte>-1){
                     cc.addRequestProperty("Range","bytes="+ startByte +"-"+endByte);
                 }else{
