@@ -42,7 +42,7 @@ public class Limny {
             sbyte += mil;
             long b2 = sbyte;
             sbyte+=1;
-            pname=+1;
+            pname+=1;
             dlqs.add(new dlTask(b1, b2));
             //
         }
