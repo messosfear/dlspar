@@ -45,7 +45,6 @@ jobs:
         mkdir wop
         mkdir wop/bin
         touch foo.txt
-        cd wop
       
     - name: build Limny
       run: javac Limny.java
@@ -56,12 +55,6 @@ jobs:
     - name: un limny
       run: java Limny "${{inputs.url}}"
 
-    - name: cleanup
-      run: |
-        cd ..
-        mv wop/bin .
-        #rm -rf wop
-      
     - name: lsd
       run: ls -R -l
       
