@@ -13,6 +13,9 @@ import java.io.Closeable;
 public class Limny {
 
     public int PARTS = 6;
+    private static final int BUFFER_SIZE = 64 * 1024; // 64 KB
+    private static final int CONNECT_TIMEOUT_MS = 15_000;
+    private static final int READ_TIMEOUT_MS = 30_000;
 
     public static void main(String[] args) {
         new Limny().start(args[0]);
@@ -40,6 +43,7 @@ public class Limny {
 
         log("preparing...");
 
+        log("length: "+size);
         if(size>1024){
             prep1KnownSize(size);
         }else{
@@ -103,6 +107,13 @@ public class Limny {
     }
 
     public long getSize(String u) throws IOException{
+
+        // 1) Obtain content length with a HEAD request
+        HttpURLConnection conn = (HttpURLConnection) new URL(u).openConnection();
+        conn.setRequestMethod("HEAD");
+        conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
+        conn.setReadTimeout(READ_TIMEOUT_MS);
+        conn.setInstanceFollowRedirects(true);
         HttpURLConnection c =  gc(u);
         return  c.getContentLength();
         //
@@ -110,8 +121,8 @@ public class Limny {
 
     public static HttpURLConnection gc(String u) throws IOException{
         HttpURLConnection c = (HttpURLConnection) new URL(u).openConnection();
-        // c.setConnectTimeout(CONNECT_TIMEOUT_MS);
-        //  c.setReadTimeout(READ_TIMEOUT_MS);
+         c.setConnectTimeout(CONNECT_TIMEOUT_MS);
+         c.setReadTimeout(READ_TIMEOUT_MS);
         //
         c.setInstanceFollowRedirects(true);
         return c;
