@@ -242,9 +242,9 @@ public class Limny {
         }
 
         try {
-            
-        InputStream in = new BufferedInputStream(c.getInputStream());
-        OutputStream out = new BufferedOutputStream(new FileOutputStream(partFile));
+
+            InputStream in = new BufferedInputStream(c.getInputStream());
+            OutputStream out = new BufferedOutputStream(new FileOutputStream(partFile));
 
             byte[] buffer = new byte[BUFFER_SIZE];
             long totalRead = 0;
@@ -252,6 +252,7 @@ public class Limny {
             while ((read = in.read(buffer)) != -1) {
                 out.write(buffer, 0, read);
                 totalRead += read;
+                System.out.println(partName+"// {"+start+"//"+end+"}//"+totalRead+"");
             }
             out.flush();
 
@@ -276,7 +277,7 @@ public class Limny {
         c.setReadTimeout(READ_TIMEOUT_MS);
         c.setInstanceFollowRedirects(true);
         File outFile = new File(fileName);
-        
+
         try {
             InputStream in = new BufferedInputStream(c.getInputStream());
             OutputStream out = new BufferedOutputStream(new FileOutputStream(outFile));
