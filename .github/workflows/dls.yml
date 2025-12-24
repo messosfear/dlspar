@@ -42,14 +42,22 @@ jobs:
         
     - name: prep structs
       run: |
-        mkdir bin
-        touch bin/foo.txt
+        mkdir wop
+        mkdir wop/bin
+        touch foo.txt
+        cd wop
       
     - name: build Limny
       run: javac Limny.java
       
     - name: un limny
       run: java Limny "${{inputs.url}}"
+
+    - name: cleanup
+      run: |
+        cd ..
+        mv wop/bin .
+        #rm -rf wop
       
     - name: lsd
       run: ls -R -l
@@ -63,7 +71,7 @@ jobs:
         git config --global user.name "${{ github.actor }}"
         git config --global user.email "${{ github.actor }}@.github.com"
         # stage any file changes to be committed
-        git checkout main
+        #git checkout main
         git add .
         # make commit with staged changes
         git commit -m 'files changed'
