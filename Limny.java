@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.io.RandomAccessFile;
+import java.io.BufferedInputStream;
+import java.io.Closeable;
 
 public class Limny {
 
@@ -28,14 +31,15 @@ public class Limny {
     }
 
     public void start(String u){
-        url = u;
+        //# uncomment line below in production
+        //url = u;
         worker= Executors.newFixedThreadPool(7);
-        
-        
+
+
         log("downloading...");
         log(url);
         log(" ");
-        
+
         //
         while(sbyte<7000000){
             long b1 = sbyte;
@@ -47,11 +51,26 @@ public class Limny {
             //
         }
 
+        pname+=1;
         dlqs.add(new dlTask(sbyte,-1));
 
         for(dlTask k : dlqs){
             log(k.savepath+"-->"+k.startByte+"~"+k.endByte);
             log("");
+            // strt the download
+            worker.submit(k);
+            //
+        }
+
+
+
+
+
+        // sleep token
+        while(dlqs.isEmpty()==false){
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {}
         }
 
     }
@@ -60,9 +79,10 @@ public class Limny {
         System.out.println(s);
     }
 
-    class dlTask{
+    class dlTask implements Runnable{
         long startByte;
         long endByte;
+        long dlByte=0;
         boolean completed;
         String savepath = fpre+"";
 
@@ -73,7 +93,7 @@ public class Limny {
             savepath+= pname;
         }
 
-        public void ex3c(){
+        public void run(){
             try {
                 //
                 //
@@ -92,12 +112,56 @@ public class Limny {
                     cc.addRequestProperty("Range","bytes="+ startByte +"-");
                 }
 
+                // response
+                int rc = cc.getResponseCode();
+
+                RandomAccessFile rf = new RandomAccessFile(savepath,"rw");
+                BufferedInputStream bis = null;
+
+
+                if(rc<400){
+                    //
+                    byte[] buff = new byte[1024*1024*3];
+                    bis = new BufferedInputStream( cc.getInputStream());
+                    int red =0;
+
+                    //while((red= bis.read(buff)) !=-1){
+                    while((red= bis.read(buff)) !=-1){
+                        //
+                        //
+                        rf.write(buff, 0, red);
+                        dlByte += red;
+
+                    }
+
+                    //dlqs.remove(this);
+
+
+                }else{
+                    //notify failure
+                    //
+                }
+
+                close(rf);
+                close(bis);
+
+
+                dlqs.remove(this);
+
 
 
             } catch (IOException e) {}
         }
     }
 
+
+    public void close(Closeable c){
+        if(c!=null){
+            try {
+                c.close();
+            } catch (IOException e) {}
+        }
+    }
 
 
 }
