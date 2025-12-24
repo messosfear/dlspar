@@ -1,0 +1,73 @@
+
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: dllf
+
+on:
+  workflow_dispatch:
+    inputs:
+      url: 
+        type: string 
+        required: true
+        description: url to download
+      part_size:
+        type: string
+        required: false
+        description: 'parts size (mb) (min:10mb)'
+        default: '100'
+      reltag:
+        type: string
+        description: release tag
+        required: false
+        default: ''
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: chk Ip
+      run: curl ipecho.net/plain; echo
+      continue-on-error: true
+    
+    - name: set up JDK 8
+      uses: actions/setup-java@v3
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+    - name: cd mkd
+      run: |
+        mkdir bin
+        cp Limny.java bin/Limny.java
+        cd bin
+        ls
+        
+      
+    - name: build Limny
+      run: javac Limny.java
+      
+    - name: un limny
+      run: java Limny "${{inputs.url}}"
+      
+    - name: lsd
+      run: ls -R -l
+      
+    - name: upload raw
+      uses: actions/upload-artifact@v4.3.3
+      with:
+        name: file.zip
+        path: bin
+
+    - name: Upload to Release Action
+      uses: svenstaro/upload-release-action@2.11.3
+      with:
+        asset_ name: splits
+        file: out 
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+      
+    - name: ls dirp
+      run: ls -R -lh
+      
