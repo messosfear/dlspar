@@ -25,6 +25,8 @@ public class Limny {
 
     ExecutorService worker;
     List<dlTask> dlqs = new ArrayList<>();
+    List<dlTask> failTask = new ArrayList<>();
+    
     String url = "https://freedl.samfrew.com/1e8322f7c8294296/f03e3d5f4c9daf23f90df4cce60a9fd3d3a489c41bfe4c9fbdfb87b9085c76708735fdcb19a7ef01f4cca378be4d9f8ad50fc8a78133cc34eb8b889741de181b28a3b6987a4da321c7710b19868c9dc52263716d37a2934ce46760b0b2d090d144b0261088d92f967157423978f3e6c80de9f8916bbbc57e44696c820dbd569f490e41c2ee2843a8fa23d0f6b3cd92e3/EUX-A155FXXU7DYK1-20251127201751.zip";
 
     static String fpre = "bin/EUX-A155FXXU7DYK1-20251127201751.zip-part-";
@@ -52,8 +54,8 @@ public class Limny {
             prep500mb(size);
             //prep1KnownSize(size);
         }else{
-
             prep2UnknownSize();
+            log("file size Unknown; failed!");
         }
 
         //setup worker
@@ -66,7 +68,7 @@ public class Limny {
         log(" ");
 
         for(dlTask k : dlqs){
-            log(k.savepath +"// "+k.endByte+"//"+k.startByte +(k.endByte-k.startByte));
+            log(k.savepath +"// "+k.startByte+"//"+k.endByte+"//"+(k.endByte-k.startByte));
             //  worker.submit(k);
             //
         }
@@ -219,6 +221,7 @@ public class Limny {
         }
     }
 
+    ////DOWNLOAD TASK
     class dlTask implements Runnable{
         long startByte;
         long endByte;
@@ -237,10 +240,11 @@ public class Limny {
         }
 
         public void run(){
+            RandomAccessFile rf = null;
+            BufferedInputStream bis = null;
+            
             try {
                 //
-                //
-
                 HttpURLConnection cc = (HttpURLConnection) new URL(url).openConnection();
                 cc.setInstanceFollowRedirects(true);
                 cc.setFollowRedirects(true);
@@ -248,30 +252,18 @@ public class Limny {
                 //
                 //String cookie = CookieManager.getInstance().getCookie(url);
                 // cc.addRequestProperty("cookie", cookie);
-
-
-                if(endByte>-1){
-                    cc.addRequestProperty("Range","bytes="+ startByte +"-"+endByte);
-                }else{
-                    cc.addRequestProperty("Range","bytes="+ startByte +"-");
-                }
-
+                cc.addRequestProperty("Range","bytes="+ startByte +"-"+endByte);
+                
                 // response
                 rcode = cc.getResponseCode();
-
-                RandomAccessFile rf = new RandomAccessFile(savepath,"rw");
-                BufferedInputStream bis = null;
-
-
                 if(rcode<400){
                     //
                     byte[] buff = new byte[1024*1024*3];
+                    rf = new RandomAccessFile(savepath,"rw");
                     bis = new BufferedInputStream( cc.getInputStream());
                     int red =0;
 
-                    //while((red= bis.read(buff)) !=-1){
                     while((red = bis.read(buff)) !=-1){
-                        //
                         //
                         rf.write(buff, 0, red);
                         dlByte = dlByte + red;
@@ -280,19 +272,21 @@ public class Limny {
 
                     //dlqs.remove(this);
 
-
                 }else{
                     //notify failure
                     //
                 }
 
-                close(rf);
-                close(bis);
-
-
                 dlqs.remove(this);
 
-            } catch (IOException e) {}
+            } catch (IOException e) {
+                failTask.add(this);
+            }
+            
+            dlqs.remove(this);
+            close(rf);
+            close(bis);
+            
         }
 
         @Override
