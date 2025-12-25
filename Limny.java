@@ -288,8 +288,7 @@ public class Limny {
                 }else{
                     //notify failure
                     dlqs.remove(this);
-                    log("failed:"+name);
-                    log(toString());
+                    log("failed: "+toString());
                     //
                 }
 
@@ -297,8 +296,8 @@ public class Limny {
 
             } catch (IOException e) {
                 failTask.add(this);
-                log("fail2: "+name);
-                log(toString());
+                log("fail2: "+toString());
+                log(e.getMessage());
             }
 
             dlqs.remove(this);
@@ -329,5 +328,6 @@ public class Limny {
             } catch (IOException e) {}
         }
     }
+
 
 }
