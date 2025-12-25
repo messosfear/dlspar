@@ -84,6 +84,8 @@ public class Limny {
              } catch (InterruptedException e) {}
          }
          //*/
+         
+         log("end...");
 
     }
 
@@ -273,6 +275,8 @@ public class Limny {
 
                 }else{
                     //notify failure
+                    dlqs.remove(this);
+                    log("failed:"+name);
                     //
                 }
 
@@ -294,7 +298,7 @@ public class Limny {
             long t = endByte-startByte;
             float per = toPercent(dlByte, t);
             //
-            String s =name+": "+t+"/"+dlByte+"("+per+"%)";
+            String s =name+":  ("+rcode+")"+t+"/"+dlByte+"("+per+"%)";
             return s;
         }
 
