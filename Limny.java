@@ -182,7 +182,7 @@ public class Limny {
         return contentLength;
         //
     }
-    
+
     static float toPercent(float score, float total){
         return (score / total ) * 100;
     }
@@ -214,9 +214,8 @@ public class Limny {
     public void proglog(){
         for(dlTask k : dlqs){
             long t = k.endByte-k.startByte;
-            toPercent(k.dlByte, t);
-            log(k.savepath+" ("+k.rcode+") ;; ["+t+"]//("+k.dlByte+")//"+"("+t+"%)");
-            log("");
+            float per = toPercent(k.dlByte, t);
+            log(";;"+k.toString());//k.name+" ("+k.rcode+") ["+t+"]//("+k.dlByte+")//"+"("+per+"%)");
         }
     }
 
@@ -227,12 +226,14 @@ public class Limny {
         int rcode=0;
         boolean completed;
         String savepath = fpre+"";
+        String name="";
 
         dlTask(long s, long e){
             startByte=s;
             endByte=e;
             //
             savepath+= pname;
+            name="p"+pname;
         }
 
         public void run(){
@@ -293,9 +294,22 @@ public class Limny {
 
             } catch (IOException e) {}
         }
-    }
 
-
+        @Override
+        public String toString() {
+            //
+            long t = endByte-startByte;
+            float per = toPercent(dlByte, t);
+            //
+            String s =name+": "+t+"/"+dlByte+"("+per+"%)";
+            return s;
+        }
+        
+        
+        
+        
+    }  //dltask
+    
     public void close(Closeable c){
         if(c!=null){
             try {
