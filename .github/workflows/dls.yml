@@ -52,8 +52,13 @@ jobs:
     - name: sub 1
       run: ls -R 
       
-    - name: un limny
+    - name: run limny
       run: java Limny "${{inputs.url}}"
+      
+    - name: cleanup
+      run: |
+        rm Limny$dlTask.class
+        rm Limny.class
 
     - name: lsd
       run: ls -R -l
@@ -77,19 +82,19 @@ jobs:
     # Commit all changed files back to the repository
     #- uses: stefanzweifel/git-auto-commit-action@v7
       
-    - name: upload raw
-      uses: actions/upload-artifact@v4.3.3
-      with:
-        name: file.zip
-        path: bin
+   # - name: upload raw
+   #   uses: actions/upload-artifact@v4.3.3
+   #   with:
+   #     name: file.zip
+   #     path: bin
 
-    - name: Upload to Release Action
-      uses: svenstaro/upload-release-action@2.11.3
-      with:
-        asset_ name: splits
-        file: bin
-        repo_token: ${{ secrets.PAT }}
-        tag: v2
+   # - name: Upload to Release Action
+   #   uses: svenstaro/upload-release-action@2.11.3
+   #   with:
+   #     asset_ name: splits
+   #     file: bin
+   #     repo_token: ${{ secrets.PAT }}
+   #     tag: v2
       
     - name: ls dirp
       run: ls -R -lh
