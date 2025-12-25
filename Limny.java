@@ -73,14 +73,13 @@ public class Limny {
             //
         }
 
-        proglog();
-
         // sleep token
         //*
          while(dlqs.isEmpty()==false){
              try {
                  proglog();
-                 Thread.sleep(60000);
+                 log("");
+                 Thread.sleep(20000);
              } catch (InterruptedException e) {}
          }
          //*/
@@ -91,8 +90,15 @@ public class Limny {
 
     //each task will download 500mb of the file; the last part may download less
     public void prep500mb(long size){
+        
+        // ensure size > 500mb
+        if(size<MB500){
+            // todo: single task
+            return;
+        }
         long s = 0;
         long s2 = MB500;
+        //
         while(s2<size){
             pname +=1;
             dlTask k = new dlTask(s, s2);
@@ -284,6 +290,7 @@ public class Limny {
 
             } catch (IOException e) {
                 failTask.add(this);
+                log("fail2: "+name);
             }
 
             dlqs.remove(this);
