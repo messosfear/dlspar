@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import java.io.RandomAccessFile;
 import java.io.BufferedInputStream;
 import java.io.Closeable;
+import java.io.File;
 
 public class Limny {
 
@@ -28,8 +29,8 @@ public class Limny {
     List<dlTask> failTask = new ArrayList<>();
 
     String murl = "https://freedl.samfrew.com/1e8322f7c8294296/f03e3d5f4c9daf23f90df4cce60a9fd3d3a489c41bfe4c9fbdfb87b9085c76708735fdcb19a7ef01f4cca378be4d9f8ad50fc8a78133cc34eb8b889741de181b28a3b6987a4da321c7710b19868c9dc52263716d37a2934ce46760b0b2d090d144b0261088d92f967157423978f3e6c80de9f8916bbbc57e44696c820dbd569f490e41c2ee2843a8fa23d0f6b3cd92e3/EUX-A155FXXU7DYK1-20251127201751.zip";
-
-    static String fpre = "bin/EUX-A155FXXU7DYK1-20251127201751.zip-part-";
+   String mfilename ="";
+    static String fpre = "bin/dpart-";
     int pname =0;
 
     public Limny(){
@@ -40,6 +41,8 @@ public class Limny {
     public void start(String u){
         //# uncomment line below in production
         //url = u;
+        //
+        new File("bin/").mkdirs();
 
         long size =0;
         try {
@@ -239,15 +242,15 @@ public class Limny {
         long dlByte;
         int rcode=0;
         boolean completed;
-        String savepath = fpre+"";
+        String savepath = "dpart-";
         String name="";
 
         dlTask(long s, long e){
             startByte=s;
             endByte=e;
             //
-            savepath+= pname;
-            name="part-"+pname;
+            savepath += pname+"--"+startByte+"--"+endByte+"";
+            name = "part-"+pname;
         }
 
         public void run(){
@@ -315,9 +318,8 @@ public class Limny {
             String s =name+":  ("+rcode+")"+t+"/"+dlByte+"("+per+"%)";
             return s;
         }
-
-
-
+        
+        //
 
     }  //dltask
 
