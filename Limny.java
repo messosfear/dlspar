@@ -16,7 +16,7 @@ public class Limny {
     private static final int BUFFER_SIZE = 64 * 1024; // 64 KB
     private static final int CONNECT_TIMEOUT_MS = 15_000;
     private static final int READ_TIMEOUT_MS = 30_000;
-    
+
     static final long MB500  = 524288000;
 
     public static void main(String[] args) {
@@ -32,13 +32,13 @@ public class Limny {
 
     public Limny(){
         //
-        
+
     }
 
     public void start(String u){
         //# uncomment line below in production
         //url = u;
-        
+
         long size =0;
         try {
             size = getSize(url);
@@ -54,7 +54,7 @@ public class Limny {
 
             prep2UnknownSize();
         }
-        
+
         //setup worker
         int wp = Math.min(dlqs.size(), PARTS);
         worker= Executors.newFixedThreadPool(wp);
@@ -66,32 +66,47 @@ public class Limny {
         log(" ");
 
         for(dlTask k : dlqs){
-            log(k.savepath +"// "+k.endByte+""+k.startByte +(k.endByte-k.startByte));
+            log(k.savepath +"// "+k.endByte+"//"+k.startByte +(k.endByte-k.startByte));
             //  worker.submit(k);
             //
         }
+        
+        proglog();
 
         // sleep token
+        /*
         while(dlqs.isEmpty()==false){
             try {
                 proglog();
-                Thread.sleep(6000);
+                Thread.sleep(60000);
                 //
             } catch (InterruptedException e) {}
         }
+        //*/
 
     }
-    
+
     //each task will download 500mb of the file; the last part may download less
     public void prep500mb(long size){
         long s = 0;
         long s2 = MB500;
-        while(s<size){
+        while(s2<size){
+            pname +=1;
             dlTask k = new dlTask(s, s2);
             dlqs.add(k);
-            
+
             s = s2+1;
             s2 += MB500;
+            //
+            if(s2>size){
+                s2=size;
+                //
+                pname+=1;
+                k = new dlTask(s, s2);
+                dlqs.add(k);
+                //
+                break;
+            }
             //
         }
     }
@@ -121,8 +136,8 @@ public class Limny {
     }
 
     /*
-      split dl into 500mb parts; we do a range test for esch part;
-    */
+     split dl into 500mb parts; we do a range test for esch part;
+     */
     public void prep2UnknownSize(){
         long curs = 0;
         long mill =  524288000;
@@ -163,11 +178,11 @@ public class Limny {
                 contentLength = -1;
             }
         }
-        
+
         return contentLength;
         //
     }
-    
+
     private static boolean isRedirect(int code) {
         return code == HttpURLConnection.HTTP_MOVED_PERM ||
             code == HttpURLConnection.HTTP_MOVED_TEMP ||
@@ -193,7 +208,6 @@ public class Limny {
             log(k.savepath+" ("+k.rcode+") ;; ["+k.startByte+"-"+k.endByte+"]//("+k.dlByte+")//");
             log("");
         }
-        log("");
     }
 
     class dlTask implements Runnable{
@@ -279,6 +293,4 @@ public class Limny {
             } catch (IOException e) {}
         }
     }
-
-
 }
