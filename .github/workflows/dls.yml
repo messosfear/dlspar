@@ -48,11 +48,6 @@ jobs:
       
     - name: run limny
       run: java Limny "${{inputs.url}}"
-      
-    - name: cleanup
-      run: |
-        if [ -e Limny$dlTask.class ] then rm Limny$dlTask.class else echo "rm." fi
-        if [ -e Limny.class ] then rm Limny.class else echo "rm." fi
 
     - name: lsd
       run: ls -R -l
@@ -92,4 +87,4 @@ jobs:
       
     - name: ls dirp
       run: ls -R -lh
-      
+    
