@@ -45,6 +45,7 @@ public class Limny {
         } catch (IOException e) {}
 
         log("preparing...");
+        log("url: "+url);
 
         log("length: "+size);
         if(size>1024){
@@ -60,8 +61,7 @@ public class Limny {
         worker= Executors.newFixedThreadPool(wp);
 
         //
-        log("downloading...");
-        log(url);
+        log("start downloading...");
         log(" ");
         log(" ");
 
@@ -70,19 +70,19 @@ public class Limny {
             //  worker.submit(k);
             //
         }
-        
+
         proglog();
 
         // sleep token
         /*
-        while(dlqs.isEmpty()==false){
-            try {
-                proglog();
-                Thread.sleep(60000);
-                //
-            } catch (InterruptedException e) {}
-        }
-        //*/
+         while(dlqs.isEmpty()==false){
+         try {
+         proglog();
+         Thread.sleep(60000);
+         //
+         } catch (InterruptedException e) {}
+         }
+         //*/
 
     }
 
@@ -182,6 +182,14 @@ public class Limny {
         return contentLength;
         //
     }
+    
+    static float toPercent(float score, float total){
+        return (score / total ) * 100;
+    }
+
+    static float percentOf(float percent, float total){
+        return (percent / 100) * total;
+    }
 
     private static boolean isRedirect(int code) {
         return code == HttpURLConnection.HTTP_MOVED_PERM ||
@@ -205,7 +213,9 @@ public class Limny {
 
     public void proglog(){
         for(dlTask k : dlqs){
-            log(k.savepath+" ("+k.rcode+") ;; ["+k.startByte+"-"+k.endByte+"]//("+k.dlByte+")//");
+            long t = k.endByte-k.startByte;
+            toPercent(k.dlByte, t);
+            log(k.savepath+" ("+k.rcode+") ;; ["+t+"]//("+k.dlByte+")//"+"("+t+"%)");
             log("");
         }
     }
@@ -293,4 +303,6 @@ public class Limny {
             } catch (IOException e) {}
         }
     }
+
+
 }
