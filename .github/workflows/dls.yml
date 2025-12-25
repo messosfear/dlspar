@@ -39,12 +39,6 @@ jobs:
       with:
         java-version: '8'
         distribution: 'temurin'
-        
-    - name: prep structs
-      run: |
-        mkdir wop
-        mkdir wop/bin
-        touch foo.txt
       
     - name: build Limny
       run: javac Limny.java
@@ -57,8 +51,8 @@ jobs:
       
     - name: cleanup
       run: |
-        rm Limny$dlTask.class
-        rm Limny.class
+        if [ -e Limny$dlTask.class ] then rm Limny$dlTask.class else echo "rm." fi
+        if [ -e Limny.class ] then rm Limny.class else echo "rm." fi
 
     - name: lsd
       run: ls -R -l
