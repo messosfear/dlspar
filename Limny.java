@@ -10,6 +10,8 @@ import java.io.RandomAccessFile;
 import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.File;
+import org.json.JSONObject;
+import org.json.JSONException;
 
 public class Limny {
 
@@ -18,7 +20,7 @@ public class Limny {
     private static final int CONNECT_TIMEOUT_MS = 15_000;
     private static final int READ_TIMEOUT_MS = 30_000;
 
-    static final long MB500  = 524288000;
+    static final long MB200  = 200000000 ;// 524288000;
 
     public static void main(String[] args) {
         new Limny().start(args[0]);
@@ -36,6 +38,10 @@ public class Limny {
     public Limny(){
         //
 
+    }
+    
+    public void exec(String u){
+        
     }
 
     public void start(String u){
@@ -98,12 +104,12 @@ public class Limny {
     public void prep500mb(long size){
         
         // ensure size > 500mb
-        if(size<MB500){
+        if(size<MB200){
             // todo: single task
             return;
         }
         long s = 0;
-        long s2 = MB500;
+        long s2 = MB200;
         //
         while(s2<size){
             pname +=1;
@@ -111,7 +117,7 @@ public class Limny {
             dlqs.add(k);
 
             s = s2+1;
-            s2 += MB500;
+            s2 += MB200;
             //
             if(s2>size){
                 s2=size;
@@ -234,6 +240,12 @@ public class Limny {
             log(";;"+k.toString());//k.name+" ("+k.rcode+") ["+t+"]//("+k.dlByte+")//"+"("+per+"%)");
         }
     }
+    
+    public void restartDl(dlTask k){
+        dlqs.remove(k);
+        dlqs.add(k);
+        worker.submit(k);
+    }
 
     ////DOWNLOAD TASK
     class dlTask implements Runnable{
@@ -244,6 +256,7 @@ public class Limny {
         boolean completed;
         String savepath = "dpart-";
         String name="";
+        boolean mfail = false;
 
         dlTask(long s, long e){
             startByte=s;
@@ -292,6 +305,7 @@ public class Limny {
                     //notify failure
                     dlqs.remove(this);
                     log("failed: "+toString());
+                    mfail=true;
                     //
                 }
 
@@ -301,9 +315,18 @@ public class Limny {
                 failTask.add(this);
                 log("fail2: "+toString());
                 log(e.getMessage());
+                mfail = true;
             }
+            
 
             dlqs.remove(this);
+            //
+            if(mfail){
+                dlByte=0;
+                restartDl(this);
+                
+            }
+            
             close(rf);
             close(bis);
 
@@ -320,6 +343,25 @@ public class Limny {
         }
         
         //
+        
+        
+        public String toFile(){
+            JSONObject o = new JSONObject();
+            try {
+                o.put("name", name);
+                o.put("startByte", ""+startByte);
+                
+            } catch (JSONException e) {}
+            return o.toString();
+        }
+        
+        public void fromFile(String s){
+            try {
+                JSONObject o = new JSONObject(s);
+                name = jstr(o,"name", "upart-");
+                
+            } catch (JSONException e) {}
+        }
 
     }  //dltask
 
@@ -329,6 +371,24 @@ public class Limny {
                 c.close();
             } catch (IOException e) {}
         }
+    }
+    
+    public String jstr(JSONObject o, String k, String d){
+        if(o.has(k)){
+            try {
+                return o.getString(k);
+            } catch (JSONException e) {}
+        }
+        return d;
+    }
+    
+    public long jint(JSONObject o, String k, long d){
+        if(o.has(k)){
+            try {
+                return o.getLong(k);
+            } catch (JSONException e) {}
+        }
+        return d;
     }
 
 
