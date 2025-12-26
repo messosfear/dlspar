@@ -10,8 +10,6 @@ import java.io.RandomAccessFile;
 import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.File;
-import org.json.JSONObject;
-import org.json.JSONException;
 
 public class Limny {
 
@@ -346,6 +344,7 @@ public class Limny {
         
         
         public String toFile(){
+            /*
             JSONObject o = new JSONObject();
             try {
                 o.put("name", name);
@@ -353,14 +352,18 @@ public class Limny {
                 
             } catch (JSONException e) {}
             return o.toString();
+            //*/
+            return "";
         }
         
         public void fromFile(String s){
+            /*
             try {
                 JSONObject o = new JSONObject(s);
                 name = jstr(o,"name", "upart-");
                 
             } catch (JSONException e) {}
+            //*/
         }
 
     }  //dltask
@@ -373,6 +376,7 @@ public class Limny {
         }
     }
     
+    /*
     public String jstr(JSONObject o, String k, String d){
         if(o.has(k)){
             try {
@@ -390,6 +394,7 @@ public class Limny {
         }
         return d;
     }
+    //*/
 
 
 }
