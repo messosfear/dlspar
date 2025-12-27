@@ -52,8 +52,8 @@ jobs:
     - name: lsd
       run: ls -R -l
       
-    # Commit and Push Changes
-    - name: Commit and Push Changes
+    # add and Commit Changes
+    - name: git setup user
       env:  
           PAT: ${{ secrets.PAT }}  # GitHub PAT stored in repository secrets  
           REPO: ${{ github.repository }}
@@ -62,11 +62,16 @@ jobs:
         git config --global user.email "${{ github.actor }}@.github.com"
         # stage any file changes to be committed
         #git checkout main
-        git add .
-        # make commit with staged changes
-        git commit -m 'files changed'
-        # push the commit back up to source GitHub repository
-        git push https://${PAT}@github.com/${REPO}
+        
+    - name: git add
+      run: git add .
+      # make commit with staged changes
+    - name: git commit
+      run: git commit -m 'files changed'
+        
+    # push the commit back up to source GitHub repository
+    - name: gitpush
+      run: git push https://${PAT}@github.com/${REPO}
         
     # Commit all changed files back to the repository
     #- uses: stefanzweifel/git-auto-commit-action@v7
@@ -87,4 +92,4 @@ jobs:
       
     - name: ls dirp
       run: ls -R -lh
-    
+      
