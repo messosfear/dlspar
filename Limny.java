@@ -18,7 +18,7 @@ public class Limny {
     private static final int CONNECT_TIMEOUT_MS = 15_000;
     private static final int READ_TIMEOUT_MS = 30_000;
 
-    static final long MB200  = 200000000 ;// 524288000;
+    static final long MB200  = 95371840;// Bytes;// 200000000 ;// 524288000;
 
     public static void main(String[] args) {
         new Limny().start(args[0]);
@@ -28,7 +28,7 @@ public class Limny {
     List<dlTask> dlqs = new ArrayList<>();
     List<dlTask> failTask = new ArrayList<>();
 
-    String murl = "https://freedl.samfrew.com/1e8322f7c8294296/f03e3d5f4c9daf23f90df4cce60a9fd3d3a489c41bfe4c9fbdfb87b9085c76708735fdcb19a7ef01f4cca378be4d9f8ad50fc8a78133cc34eb8b889741de181b28a3b6987a4da321c7710b19868c9dc52263716d37a2934ce46760b0b2d090d144b0261088d92f967157423978f3e6c80de9f8916bbbc57e44696c820dbd569f490e41c2ee2843a8fa23d0f6b3cd92e3/EUX-A155FXXU7DYK1-20251127201751.zip";
+    String murl = "https://s01.ooo/v2/IxJCDiMnNAY0QCIxNBYzJzQsMzshMR4lFzssIDs2ByAzMUEgOzEUQDMQMCMBOyw/IzghJRIHIAoyCwg/HhcFQDIsChQ1QA0fNDssKzQnAiQ0JUErOwAhMzwRQQ08MS4WIwszJiElLj0yOEEpMwAfQTMDMxw4ACEaMzszEAM4LD0SJC8XHiQuBBI4BkIjCyI/Iws8MQEWCDAeCw0xCREHOTQbIyshAD4OIQAGLC44Hiw0ER4OMiUzLDIlDSs8AD4fJhsGOg8HCkA8AywnCRc+Di8LBxAzBy4RDxYpKTwkHjUeBylCJgceIAM7ITgJNh4cAy8+AwMSMCAjAzswMyw+By8vKSYNAwgwHjshPBcHO0AzBywJIy8+ETwXIysPESw5Jhs5PzsLIBwDCC4tDSQ0QDQnHiwuQDMtIRspAiMRKT8vBx4sNDsUCQ02LwsNAwdCJhYIQB4LPB0BFiI/IwMiEw==";//"https://freedl.samfrew.com/1e8322f7c8294296/f03e3d5f4c9daf23f90df4cce60a9fd3d3a489c41bfe4c9fbdfb87b9085c76708735fdcb19a7ef01f4cca378be4d9f8ad50fc8a78133cc34eb8b889741de181b28a3b6987a4da321c7710b19868c9dc52263716d37a2934ce46760b0b2d090d144b0261088d92f967157423978f3e6c80de9f8916bbbc57e44696c820dbd569f490e41c2ee2843a8fa23d0f6b3cd92e3/EUX-A155FXXU7DYK1-20251127201751.zip";
    String mfilename ="";
     static String fpre = "bin/dpart-";
     int pname =0;
@@ -318,15 +318,18 @@ public class Limny {
             
 
             dlqs.remove(this);
-            //
-            if(mfail){
-                dlByte=0;
-                restartDl(this);
-                
-            }
             
             close(rf);
             close(bis);
+            //
+            if(mfail){
+                
+                //dlByte=0;
+                startByte=dlByte;
+               restartDl(this);
+                run();
+            }
+            
 
         }
 
