@@ -62,15 +62,17 @@ jobs:
         git config --global user.email "${{ github.actor }}@.github.com"
         # stage any file changes to be committed
         #git checkout main
+        git add .
         
-    - name: git add
-      run: git add .
       # make commit with staged changes
     - name: git commit
       run: git commit -m 'files changed'
         
     # push the commit back up to source GitHub repository
     - name: gitpush
+      env:  
+          PAT: ${{ secrets.PAT }}  # GitHub PAT stored in repository secrets  
+          REPO: ${{ github.repository }}
       run: git push https://${PAT}@github.com/${REPO}
         
     # Commit all changed files back to the repository
