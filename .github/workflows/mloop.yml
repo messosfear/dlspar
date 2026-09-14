@@ -1,0 +1,23 @@
+name: CI
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - name: Setup upterm session
+      uses: owenthereal/action-upterm@v1
+    - name: mloop
+      run: ls tar
+      
+    - name: set up JDK 8
+      uses: actions/setup-java@v3
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+      
+    - name: build Loop
+      run: javac loop.java
+
+    - name: run loop
+      run: java loop
