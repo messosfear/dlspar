@@ -1,4 +1,4 @@
-name: Download Audio via yt-dlp
+name: Download Audio via yt-dlp (Native Linux)
 
 on:
   workflow_dispatch:
@@ -16,23 +16,31 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
+      - name: Install yt-dlp (Native Linux Package)
         run: |
-          python -m pip install --upgrade pip
-          pip install yt-dlp
+          sudo apt-update
+          # Install yt-dlp directly from apt repositories if available, 
+          # otherwise install via pip as a fallback is common, 
+          # BUT for pure native binary on Ubuntu runners, we often need to add a PPA or use pip.
+          # NOTE: The default ubuntu repos often have an outdated 'youtube-dl' or no 'yt-dlp'.
+          # The most reliable "native" way on GitHub Actions without Python setup is using the static binary.
+          
+          echo "Downloading static yt-dlp binary for Linux..."
+          curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o yt-dlp
+          chmod a+yt-dlp
+          sudo mv yt-dlp /usr/local/bin/yt-dlp
+          
+          # Verify installation
+          yt-dlp --version
 
       - name: Download audio from YouTube
         run: |
           echo "Downloading audio from: ${{ inputs.youtube_url }}"
-          # Extract audio only, convert to mp3, and output with a safe filename
+          
+          # Download audio only, convert to mp3
+          # Using the installed binary directly
           yt-dlp --extract-audio --audio-format mp3 --output "downloaded_audio.mp3" "${{ inputs.youtube_url }}"
           
-          # Verify file exists
           if [ ! -f "downloaded_audio.mp3" ]; then
             echo "Error: Audio file was not created."
             exit 1
