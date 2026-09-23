@@ -1,0 +1,49 @@
+name: Download Audio via yt-dlp
+
+on:
+  workflow_dispatch:
+    inputs:
+      youtube_url:
+        description: 'The YouTube URL to download audio from'
+        required: true
+        type: string
+
+jobs:
+  download-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install yt-dlp
+
+      - name: Download audio from YouTube
+        run: |
+          echo "Downloading audio from: ${{ inputs.youtube_url }}"
+          # Extract audio only, convert to mp3, and output with a safe filename
+          yt-dlp --extract-audio --audio-format mp3 --output "downloaded_audio.mp3" "${{ inputs.youtube_url }}"
+          
+          # Verify file exists
+          if [ ! -f "downloaded_audio.mp3" ]; then
+            echo "Error: Audio file was not created."
+            exit 1
+          fi
+          
+          echo "Download successful."
+
+      - name: Upload audio as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: youtube-audio-download
+          path: downloaded_audio.mp3
+          retention-days: 5
+          if-no-files-found: error
