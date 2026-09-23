@@ -18,7 +18,7 @@ jobs:
 
       - name: Install yt-dlp (Native Linux Package)
         run: |
-          sudo apt-update
+          sudo apt update
           # Install yt-dlp directly from apt repositories if available, 
           # otherwise install via pip as a fallback is common, 
           # BUT for pure native binary on Ubuntu runners, we often need to add a PPA or use pip.
