@@ -1,4 +1,4 @@
-name: Download Audio via yt-dlp (Native Linux)
+name: Download Audio via yt-dlp (Static Binary)
 
 on:
   workflow_dispatch:
@@ -16,33 +16,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install yt-dlp (Native Linux Package)
+      - name: Install yt-dlp (Static Binary)
         run: |
-          sudo apt update
-          # Install yt-dlp directly from apt repositories if available, 
-          # otherwise install via pip as a fallback is common, 
-          # BUT for pure native binary on Ubuntu runners, we often need to add a PPA or use pip.
-          # NOTE: The default ubuntu repos often have an outdated 'youtube-dl' or no 'yt-dlp'.
-          # The most reliable "native" way on GitHub Actions without Python setup is using the static binary.
-          
-          echo "Downloading static yt-dlp binary for Linux..."
+          echo "Downloading latest yt-dlp static binary..."
           curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o yt-dlp
-          chmod a+yt-dlp
+          chmod +x yt-dlp
           sudo mv yt-dlp /usr/local/bin/yt-dlp
           
-          # Verify installation
+          echo "Verifying installation..."
           yt-dlp --version
+
+      - name: Install FFmpeg (Required for audio conversion)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
 
       - name: Download audio from YouTube
         run: |
           echo "Downloading audio from: ${{ inputs.youtube_url }}"
           
-          # Download audio only, convert to mp3
-          # Using the installed binary directly
+          # Download and convert to MP3
           yt-dlp --extract-audio --audio-format mp3 --output "downloaded_audio.mp3" "${{ inputs.youtube_url }}"
           
           if [ ! -f "downloaded_audio.mp3" ]; then
-            echo "Error: Audio file was not created."
+            echo "Error: Audio file was not created. Check logs for details."
             exit 1
           fi
           
