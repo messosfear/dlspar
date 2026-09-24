@@ -1,6 +1,11 @@
 name: Download AOSP Folder
 on:
-  workflow_dispatch: # Allows manual trigger from the Actions tab
+  workflow_dispatch:
+    inputs:
+      directory_path:
+        description: 'The path to the folder you want to download (e.g., core/java/android/widget)'
+        required: true
+        default: 'core/java/android/widget'
 
 jobs:
   fetch-folder:
@@ -13,9 +18,9 @@ jobs:
           
           cd aosp_base
           
-          # Initialize sparse-checkout and set the target directory
+          # Initialize sparse-checkout and set the target directory from input
           git sparse-checkout init --cone
-          git sparse-checkout set core/java/android/widget
+          git sparse-checkout set ${{ github.event.inputs.directory_path }}
           
           # Pull the files for the specified path from the master branch
           git checkout master
@@ -23,5 +28,5 @@ jobs:
       - name: Upload Folder as Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: android-widget-folder
-          path: aosp_base/core/java/android/widget/
+          name: aosp-folder-download
+          path: aosp_base/${{ github.event.inputs.directory_path }}/
