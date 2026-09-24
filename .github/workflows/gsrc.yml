@@ -1,10 +1,10 @@
-name: Download Googlesource Subdirectory
+name: Download Googlesource Path
 
 on:
   workflow_dispatch:
     inputs:
       url:
-        description: "googlesource.com URL pointing to a subdirectory"
+        description: "googlesource URL"
         required: true
         type: string
 
@@ -13,49 +13,98 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install git
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git
-
-      - name: Parse URL and download subdirectory
+      - name: Parse URL, clone, and fetch path
         shell: bash
         run: |
           set -euo pipefail
 
           URL='${{ inputs.url }}'
 
-          # Example:
-          # https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java
-          ROOT_URL="${URL%%/+/ *}"
-          if [[ "$URL" == *"/+/"* ]]; then
-            ROOT_URL="${URL%%/+/ *}"
-          fi
+          parse_url() {
+            local url="$1"
+            local repo ref path rest
 
-          # More robust split
-          REPO_URL="${URL%%/+/ *}"
-          SUBPATH="${URL#*/+/}"
-          SUBPATH="${SUBPATH#*/}"   # drops ref part (refs/heads/main), leaving the path
-          SUBPATH="${SUBPATH%%\?*}"
+            # Remove query / fragment
+            url="${url%%\#*}"
+            url="${url%%\?*}"
 
-          if [[ -z "$SUBPATH" || "$SUBPATH" == "$URL" ]]; then
-            echo "Could not parse subdirectory from URL: $URL"
+            # Must be a googlesource tree/blob style URL
+            if [[ "$url" != *"/+/"* ]]; then
+              echo "Unsupported URL format: $url"
+              return 1
+            fi
+
+            repo="${url%%/+/ *}"
+            repo="${url%%/+/*}"
+
+            rest="${url#*'/+/'}"
+
+            # Supported forms:
+            #   /+/refs/heads/main/path/to/dir
+            #   /+/refs/tags/v1.0/path/to/dir
+            #   /+/main/path/to/dir
+            #   /+/some-commit/path/to/dir
+            #
+            # We treat the first path segment after /+/ as ref/revision,
+            # and the remainder as the target path.
+            ref="${rest%%/*}"
+            path="${rest#*/}"
+
+            # If there's no slash after /+/, it's a root or invalid case
+            if [[ "$rest" == "$ref" ]]; then
+              path=""
+            fi
+
+            # Normalize common ref prefixes
+            if [[ "$ref" == refs/heads/* ]]; then
+              ref="${ref#refs/heads/}"
+            elif [[ "$ref" == refs/tags/* ]]; then
+              ref="${ref#refs/tags/}"
+            elif [[ "$ref" == refs/* ]]; then
+              ref="${ref#refs/}"
+            fi
+
+            echo "$repo|$ref|$path"
+          }
+
+          parsed="$(parse_url "$URL")"
+          repo_url="${parsed%%|*}"
+          rest="${parsed#*|}"
+          ref="${rest%%|*}"
+          path="${rest#*|}"
+
+          if [[ -z "$repo_url" || -z "$ref" ]]; then
+            echo "Failed to parse URL: $URL"
             exit 1
           fi
 
-          echo "Repo URL: $REPO_URL"
-          echo "Subpath: $SUBPATH"
+          echo "Repo: $repo_url"
+          echo "Ref:  $ref"
+          echo "Path: ${path:-<repo root>}"
 
-          git clone --depth 1 --filter=blob:none --sparse "$REPO_URL" repo
+          rm -rf repo artifact
+          git clone --depth 1 --single-branch --branch "$ref" --filter=blob:none --sparse "$repo_url" repo
           cd repo
-          git sparse-checkout set "$SUBPATH"
+
+          if [[ -n "$path" ]]; then
+            git sparse-checkout set "$path"
+          fi
 
           mkdir -p ../artifact
-          cp -R "$SUBPATH" "../artifact/"
+
+          if [[ -n "$path" ]]; then
+            if [[ ! -e "$path" ]]; then
+              echo "Path not found in repository: $path"
+              exit 1
+            fi
+            cp -R "$path" ../artifact/
+          else
+            cp -R . ../artifact/
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: googlesource-subdirectory
+          name: googlesource-content
           path: artifact/
           if-no-files-found: error
