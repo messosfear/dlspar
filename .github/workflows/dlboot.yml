@@ -1,11 +1,11 @@
-name: Download AOSP Folder
+name: Download aosp gsource Folder
 on:
   workflow_dispatch:
     inputs:
       directory_path:
         description: 'The path to the folder you want to download (e.g., core/java/android/widget)'
         required: true
-        default: 'core/java/android/widget'
+        default: 'core/java/android'
 
 jobs:
   fetch-folder:
