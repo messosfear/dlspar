@@ -1,0 +1,147 @@
+name: Download GitHub / Googlesource Folder and Upload Artifact
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_url:
+        description: "GitHub or Googlesource URL to a repo, folder, raw file, or archive"
+        required: true
+        type: string
+      artifact_name:
+        description: "Artifact name"
+        required: false
+        default: downloaded-content
+        type: string
+
+jobs:
+  download-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq unzip
+
+      - name: Download content
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          URL="${{ inputs.source_url }}"
+          WORKDIR="$(mktemp -d)"
+          OUTDIR="$WORKDIR/out"
+          mkdir -p "$OUTDIR"
+
+          download_file() {
+            local url="$1"
+            local out="$2"
+            curl -L --fail --silent --show-error "$url" -o "$out"
+          }
+
+          if [[ "$URL" =~ github\.com ]]; then
+            # Supports:
+            # - https://github.com/org/repo
+            # - https://github.com/org/repo/tree/branch/subfolder
+            # - https://github.com/org/repo/blob/branch/file
+            # - https://raw.githubusercontent.com/org/repo/branch/path/to/file
+            repo_url=$(echo "$URL" | sed -E 's#(https://github\.com/[^/]+/[^/]+).*#\1#')
+            rest="${URL#"$repo_url"}"
+
+            ref="main"
+            subpath="."
+
+            if [[ "$URL" =~ raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.*)$ ]]; then
+              # Raw file URL
+              owner="${BASH_REMATCH[1]}"
+              repo="${BASH_REMATCH[2]}"
+              ref="${BASH_REMATCH[3]}"
+              file_path="${BASH_REMATCH[4]}"
+
+              mkdir -p "$OUTDIR/$(dirname "$file_path")"
+              download_file "$URL" "$OUTDIR/$file_path"
+
+            else
+              if [[ "$rest" =~ /tree/([^/]+)(/.*)?$ ]]; then
+                ref="${BASH_REMATCH[1]}"
+                subpath="${BASH_REMATCH[2]:-/}"
+                subpath="${subpath#/}"
+              elif [[ "$rest" =~ /blob/([^/]+)(/.*)?$ ]]; then
+                ref="${BASH_REMATCH[1]}"
+                subpath="${BASH_REMATCH[2]:-/}"
+                subpath="${subpath#/}"
+                # Convert blob URL to raw file URL
+                raw_url="${repo_url/github.com/raw.githubusercontent.com}"
+                raw_url="${raw_url/\/blob\//\/}"
+                raw_url="${raw_url}/${subpath}"
+                download_file "$raw_url" "$OUTDIR/$(basename "$subpath")"
+                exit 0
+              fi
+
+              git clone --depth 1 --no-checkout "$repo_url" repo
+              cd repo
+              git sparse-checkout init --cone
+              if [[ "$subpath" == "." || -z "$subpath" ]]; then
+                git sparse-checkout set .
+              else
+                git sparse-checkout set "$subpath"
+              fi
+              git checkout "$ref"
+
+              cp -R "$WORKDIR/repo/${subpath:-.}" "$OUTDIR/" 2>/dev/null || true
+            fi
+
+          elif [[ "$URL" =~ googlesource\.com ]]; then
+            # Supports:
+            # - repo root
+            # - /+/branch/path/to/subdir
+            # - /+/branch/path/to/file?format=TEXT
+            # - /+archive/branch.zip
+            if [[ "$URL" =~ /%2Barchive/|/+archive/ ]]; then
+              archive_url="$URL"
+              archive_name="$OUTDIR/archive.zip"
+              download_file "$archive_url" "$archive_name"
+              unzip -q "$archive_name" -d "$OUTDIR"
+            else
+              repo_url=$(echo "$URL" | sed -E 's#(https://[^/]+/[^+]+).*#\1#' | sed 's#/$##')
+              path_after_plus="${URL#*+/}"
+
+              if [[ "$path_after_plus" == "$URL" ]]; then
+                branch="main"
+                subpath="."
+              else
+                branch="${path_after_plus%%/*}"
+                subpath="${path_after_plus#*/}"
+                if [[ "$subpath" == "$branch" || -z "$subpath" ]]; then
+                  subpath="."
+                fi
+              fi
+
+              git clone --depth 1 --no-checkout "$repo_url" repo
+              cd repo
+              git sparse-checkout init --cone
+              if [[ "$subpath" == "." ]]; then
+                git sparse-checkout set .
+              else
+                git sparse-checkout set "$subpath"
+              fi
+              git checkout "$branch"
+
+              cp -R "$WORKDIR/repo/${subpath:-.}" "$OUTDIR/" 2>/dev/null || true
+            fi
+          else
+            echo "Unsupported URL: $URL"
+            exit 1
+          fi
+
+          echo "OUTDIR=$OUTDIR" >> "$GITHUB_ENV"
+
+      - name: Create archive
+        run: |
+          tar -czf content.tgz -C "$OUTDIR" .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: content.tgz
