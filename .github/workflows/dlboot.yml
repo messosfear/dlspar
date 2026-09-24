@@ -1,0 +1,27 @@
+name: Download AOSP Folder
+on:
+  workflow_dispatch: # Allows manual trigger from the Actions tab
+
+jobs:
+  fetch-folder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sparse Checkout AOSP
+        run: |
+          # Clone the repo without checking out any files initially
+          git clone --filter=blob:none --no-checkout https://android.googlesource.com/platform/frameworks/base aosp_base
+          
+          cd aosp_base
+          
+          # Initialize sparse-checkout and set the target directory
+          git sparse-checkout init --cone
+          git sparse-checkout set core/java/android/widget
+          
+          # Pull the files for the specified path from the master branch
+          git checkout master
+
+      - name: Upload Folder as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-widget-folder
+          path: aosp_base/core/java/android/widget/
